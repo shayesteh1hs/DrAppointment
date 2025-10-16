@@ -5,12 +5,13 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 )
 
+var validate = validator.New()
+
 type SpecialtyFilter struct {
 	Name string `form:"name" validate:"omitempty"`
 }
 
 func (f SpecialtyFilter) Validate() error {
-	validate := validator.New()
 	return validate.Struct(f)
 }
 
