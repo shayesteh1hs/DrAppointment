@@ -34,8 +34,8 @@ type LimitOffsetPaginator[T domain.ModelEntity] struct {
 	params LimitOffsetParams
 }
 
-func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) LimitOffsetPaginator[T] {
-	return LimitOffsetPaginator[T]{params: params}
+func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) *LimitOffsetPaginator[T] {
+	return &LimitOffsetPaginator[T]{params: params}
 }
 
 func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) (string, []interface{}) {

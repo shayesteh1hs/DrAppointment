@@ -17,7 +17,7 @@ import (
 )
 
 type DoctorRepository interface {
-	GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error)
+	GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Doctor, error)
 	Create(ctx context.Context, doctor *domain.Doctor) error
 }
@@ -26,7 +26,7 @@ type doctorRepository struct {
 	db *sql.DB
 }
 
-func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error) {
+func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error) {
 	// Build query for count
 	countQb := querybuilder.NewDoctorQueryBuilder()
 	countQb.WithFilters(filters)
