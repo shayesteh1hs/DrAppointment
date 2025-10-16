@@ -96,7 +96,7 @@ func (r *doctorRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.D
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("doctor not found")
+			return nil, fmt.Errorf("doctor not found: %s", id)
 		}
 		return nil, fmt.Errorf("failed to scan doctor: %w", err)
 	}
