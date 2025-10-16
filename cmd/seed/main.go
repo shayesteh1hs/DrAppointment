@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"drgo/internal/database"
-	"drgo/internal/domain"
+	medicalDomain "drgo/internal/domain/medical"
 	medicalRepo "drgo/internal/repository/medical"
 )
 
@@ -24,11 +25,16 @@ func main() {
 		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 	}
 
-	db, err := database.Connect(dbConfig)
+	db, err := database.Connect(&dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			panic("Failed to close database")
+		}
+	}(db)
 
 	doctorRepo := medicalRepo.NewDoctorRepository(db)
 
@@ -49,7 +55,7 @@ func main() {
 
 	doctorCount := 50
 	for i := 0; i < doctorCount; i++ {
-		doc := &domain.Doctor{
+		doc := &medicalDomain.Doctor{
 			ID:          uuid.New(),
 			Name:        gofakeit.Name(),
 			Specialty:   specialties[gofakeit.Number(0, len(specialties)-1)],

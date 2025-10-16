@@ -148,9 +148,9 @@ func (r *doctorRepository) Create(ctx context.Context, doctor *domain.Doctor) er
 		doctor.UpdatedAt,
 	)
 
-	sql, args := ib.Build()
+	query, args := ib.Build()
 
-	_, err := r.db.ExecContext(ctx, sql, args...)
+	_, err := r.db.ExecContext(ctx, query, args...)
 	return err
 }
 func NewDoctorRepository(db *sql.DB) DoctorRepository {

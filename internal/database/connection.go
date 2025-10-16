@@ -26,7 +26,10 @@ type Config struct {
 // LoadConfig loads database configuration from environment variables
 func LoadConfig() (*Config, error) {
 	// Load .env file if it exists
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
 
 	port, err := strconv.Atoi(getEnv("DB_PORT", "5432"))
 	if err != nil {
@@ -86,14 +89,4 @@ func Connect(config *Config) (*sql.DB, error) {
 	}
 
 	return db, nil
-}
-
-// ConnectWithDefaults creates a database connection using environment variables
-func ConnectWithDefaults() (*sql.DB, error) {
-	config, err := LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	return Connect(config)
 }
