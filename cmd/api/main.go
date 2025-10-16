@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -12,16 +13,17 @@ import (
 
 	"drgo/internal/database"
 	"drgo/internal/router"
+	"drgo/internal/utils"
 )
 
 func main() {
 	dbConfig := database.Config{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     5432,
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "postgres"),
-		DBName:   getEnv("DB_NAME", "drgo"),
-		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
+		Host:     utils.GetEnv("DB_HOST", "localhost"),
+		Port:     utils.GetEnvInt("DB_PORT", 5432),
+		User:     utils.GetEnv("DB_USER", "postgres"),
+		Password: utils.GetEnv("DB_PASSWORD", "postgres"),
+		DBName:   utils.GetEnv("DB_NAME", "drgo"),
+		SSLMode:  utils.GetEnv("DB_SSL_MODE", "disable"),
 	}
 
 	db, err := database.Connect(&dbConfig)
@@ -38,17 +40,17 @@ func main() {
 	r := router.SetupRouter(db)
 
 	server := &http.Server{
-		Addr:    ":" + getEnv("PORT", "8080"),
+		Addr:    ":" + utils.GetEnv("PORT", "8080"),
 		Handler: r,
 	}
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
 
-	log.Println("Server started on port", getEnv("PORT", "8080"))
+	log.Println("Server started on port", utils.GetEnvInt("PORT", 8000))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -62,12 +64,4 @@ func main() {
 	}
 
 	log.Println("Server exiting")
-}
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
 }

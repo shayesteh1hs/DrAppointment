@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"os"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -13,16 +12,17 @@ import (
 	"drgo/internal/database"
 	medicalDomain "drgo/internal/domain/medical"
 	medicalRepo "drgo/internal/repository/medical"
+	"drgo/internal/utils"
 )
 
 func main() {
 	dbConfig := database.Config{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     5432,
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "postgres"),
-		DBName:   getEnv("DB_NAME", "drgo"),
-		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
+		Host:     utils.GetEnv("DB_HOST", "localhost"),
+		Port:     utils.GetEnvInt("DB_PORT", 5432),
+		User:     utils.GetEnv("DB_USER", "postgres"),
+		Password: utils.GetEnv("DB_PASSWORD", "postgres"),
+		DBName:   utils.GetEnv("DB_NAME", "drgo"),
+		SSLMode:  utils.GetEnv("DB_SSL_MODE", "disable"),
 	}
 
 	db, err := database.Connect(&dbConfig)
@@ -76,12 +76,4 @@ func main() {
 	}
 
 	log.Printf("Successfully seeded %d doctors!", doctorCount)
-}
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
 }
