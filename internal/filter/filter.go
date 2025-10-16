@@ -1,0 +1,28 @@
+package filter
+
+import (
+	"github.com/huandu/go-sqlbuilder"
+)
+
+type Filter interface {
+	Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder
+	Validate() error
+}
+
+type Filters []Filter
+
+func (f Filters) Validate() error {
+	for _, filter := range f {
+		if err := filter.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f Filters) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
+	for _, filter := range f {
+		sb = filter.Apply(sb)
+	}
+	return sb
+}
