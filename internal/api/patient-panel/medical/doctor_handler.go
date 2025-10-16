@@ -32,18 +32,18 @@ func (h *Handler) GetAll(c *gin.Context) {
 		return
 	}
 
-	var filterPrams medicalFilter.DoctorQueryParam
-	if err := c.ShouldBindQuery(&filterPrams); err != nil {
+	var filterParams medicalFilter.DoctorQueryParam
+	if err := c.ShouldBindQuery(&filterParams); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filter parameters"})
 		return
 	}
-	if err := filterPrams.Validate(); err != nil {
+	if err := filterParams.Validate(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
-	result, err := h.repo.GetAllOffset(c.Request.Context(), filterPrams, paginator)
+	result, err := h.repo.GetAllOffset(c.Request.Context(), filterParams, paginator)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors"})
 		return
