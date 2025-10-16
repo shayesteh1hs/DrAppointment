@@ -76,7 +76,7 @@ func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.Doct
 
 func (r *doctorRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Doctor, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("id", "name", "specialty", "phone_number", "avatar_url", "description", "created_at", "updated_at")
+	sb.Select("id", "name", "specialty_id", "phone_number", "avatar_url", "description", "created_at", "updated_at")
 	sb.From("doctors")
 	sb.Where(sb.Equal("id", id))
 
@@ -87,7 +87,7 @@ func (r *doctorRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.D
 	err := row.Scan(
 		&doc.ID,
 		&doc.Name,
-		&doc.Specialty,
+		&doc.SpecialtyID,
 		&doc.PhoneNumber,
 		&doc.AvatarURL,
 		&doc.Description,
@@ -111,7 +111,7 @@ func (r *doctorRepository) scanDoctors(rows *sql.Rows) ([]domain.Doctor, error) 
 		err := rows.Scan(
 			&doc.ID,
 			&doc.Name,
-			&doc.Specialty,
+			&doc.SpecialtyID,
 			&doc.PhoneNumber,
 			&doc.AvatarURL,
 			&doc.Description,
@@ -135,13 +135,13 @@ func (r *doctorRepository) Create(ctx context.Context, doctor *domain.Doctor) er
 	ib := sqlbuilder.PostgreSQL.NewInsertBuilder()
 	ib.InsertInto("doctors")
 	ib.Cols(
-		"id", "name", "specialty", "phone_number",
+		"id", "name", "specialty_id", "phone_number",
 		"avatar_url", "description", "created_at", "updated_at",
 	)
 	ib.Values(
 		doctor.ID,
 		doctor.Name,
-		doctor.Specialty,
+		doctor.SpecialtyID,
 		doctor.PhoneNumber,
 		doctor.AvatarURL,
 		doctor.Description,

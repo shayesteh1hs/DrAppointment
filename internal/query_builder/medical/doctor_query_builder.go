@@ -16,7 +16,7 @@ func NewDoctorQueryBuilder() *DoctorQueryBuilder {
 	sb.Select(
 		"doctors.id",
 		"doctors.name",
-		"doctors.specialty",
+		"doctors.specialty_id",
 		"doctors.phone_number",
 		"doctors.avatar_url",
 		"doctors.description",

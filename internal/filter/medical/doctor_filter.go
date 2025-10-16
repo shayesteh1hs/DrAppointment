@@ -6,8 +6,8 @@ import (
 )
 
 type DoctorQueryParam struct {
-	Name      string `form:"name"`
-	Specialty string `form:"specialty"`
+	Name        string `form:"name"`
+	SpecialtyID int    `form:"specialty_id"`
 }
 
 func (f DoctorQueryParam) Validate() error {
@@ -17,6 +17,9 @@ func (f DoctorQueryParam) Validate() error {
 func (f DoctorQueryParam) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 	if f.Name != "" {
 		sb.Where(sb.Equal("name", f.Name))
+	}
+	if f.SpecialtyID != 0 {
+		sb.Where(sb.Equal("specialty_id", f.SpecialtyID))
 	}
 	return sb
 }
