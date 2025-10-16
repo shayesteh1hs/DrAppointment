@@ -46,10 +46,8 @@ func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.Doct
 
 	sb := qb.Build()
 
-	// Apply pagination
 	paginatedQuery, paginatedArgs := paginator.Paginate(sb)
 
-	// Handle cursor pagination result processing
 	rows, err := r.db.QueryContext(ctx, paginatedQuery, paginatedArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query doctors: %w", err)
