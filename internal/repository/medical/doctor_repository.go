@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/huandu/go-sqlbuilder"
@@ -56,7 +57,7 @@ func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.Doct
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-
+			log.Printf("failed to close rows: %v", err)
 		}
 	}(rows)
 
