@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -10,13 +11,19 @@ import (
 )
 
 type LimitOffsetParams struct {
-	Page    int    `form:"page,default=1" binding:"min=1"`
-	Limit   int    `form:"limit,default=10" binding:"min=1,max=100"`
-	BaseURL string `form:"-"`
+	Page      int    `form:"page,default=1" binding:"min=1"`
+	Limit     int    `form:"limit,default=10" binding:"min=1,max=100"`
+	BaseURL   string `form:"-"`
+	validated bool
 }
 
 func (p *LimitOffsetParams) Validate() error {
+	p.validated = true
 	return nil
+}
+
+func (p *LimitOffsetParams) isValidated() bool {
+	return p.validated
 }
 
 type LimitOffsetPaginator[T domain.ModelEntity] struct {
@@ -27,11 +34,16 @@ func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) *Li
 	return &LimitOffsetPaginator[T]{params: params}
 }
 
-func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
+func (p *LimitOffsetPaginator[T]) Paginate(sb sqlbuilder.SelectBuilder) error {
+	if !p.params.isValidated() {
+		return errors.New("params should be validated before paginating")
+	}
+
 	offset := (p.params.Page - 1) * p.params.Limit
 	sb.Limit(p.params.Limit)
 	sb.Offset(offset)
-	return sb
+
+	return nil
 }
 
 func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {

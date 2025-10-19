@@ -29,7 +29,10 @@ func (r *doctorRepository) GetAllPaginated(ctx context.Context, filters filter.D
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.From("doctors")
 	sb = filters.Apply(sb)
-	sb = paginator.Paginate(sb)
+
+	if err := paginator.Paginate(*sb); err != nil {
+		return nil, err
+	}
 
 	query, args := sb.Build()
 	rows, err := r.db.QueryContext(ctx, query, args...)

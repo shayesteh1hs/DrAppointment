@@ -2,6 +2,7 @@ package pagination
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -12,10 +13,11 @@ import (
 )
 
 type CursorParams struct {
-	Cursor   string `form:"cursor"`
-	Ordering string `form:"ordering,default=asc"`
-	Limit    int    `form:"limit,default=10" binding:"min=1,max=100"`
-	BaseURL  string `form:"-"`
+	Cursor    string `form:"cursor"`
+	Ordering  string `form:"ordering,default=asc"`
+	Limit     int    `form:"limit,default=10" binding:"min=1,max=100"`
+	BaseURL   string `form:"-"`
+	validated bool
 }
 
 func (p *CursorParams) Validate() error {
@@ -30,6 +32,7 @@ func (p *CursorParams) Validate() error {
 		}
 	}
 
+	p.validated = true
 	return nil
 }
 
@@ -41,6 +44,10 @@ func (p *CursorParams) IsBackward() bool {
 	return p.Ordering == "desc"
 }
 
+func (p *CursorParams) isValidated() bool {
+	return p.validated
+}
+
 type CursorPaginator[T domain.ModelEntity] struct {
 	params CursorParams
 }
@@ -49,7 +56,11 @@ func NewCursorPaginator[T domain.ModelEntity](params CursorParams) *CursorPagina
 	return &CursorPaginator[T]{params: params}
 }
 
-func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
+func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
+	if !p.params.isValidated() {
+		return errors.New("params should be validated before paginating")
+	}
+
 	// Fetch one extra item to determine if there's a next/previous page
 	sb.Limit(p.params.Limit + 1)
 
@@ -72,7 +83,7 @@ func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) *sqlbuilder.
 		sb.OrderByDesc("id")
 	}
 
-	return sb
+	return nil
 }
 
 func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
