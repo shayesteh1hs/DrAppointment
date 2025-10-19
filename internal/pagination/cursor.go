@@ -109,14 +109,16 @@ func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *
 
 	// Generate previous link (backward pagination from first item)
 	if p.params.Cursor != "" || p.params.IsBackward() {
-		prevURL := p.buildURL(firstID, "desc")
-		result.Previous = &prevURL
+		if prevURL := p.buildURL(firstID, "desc"); prevURL != "" {
+			result.Previous = &prevURL
+		}
 	}
 
 	// Generate next link (forward pagination from last item)
 	if hasMore || p.params.IsBackward() {
-		nextURL := p.buildURL(lastID, "asc")
-		result.Next = &nextURL
+		if nextURL := p.buildURL(lastID, "asc"); nextURL != "" {
+			result.Next = &nextURL
+		}
 	}
 
 	return result
