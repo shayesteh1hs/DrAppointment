@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 
@@ -28,6 +29,13 @@ func Connect(ctx context.Context, config *Config) (*sql.DB, error) {
 		url.QueryEscape(config.Password),
 		config.Host, config.Port, config.DBName, config.SSLMode)
 	db, err := sql.Open("postgres", u)
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Printf("Failed to close database: %v", err)
+		}
+	}(db)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
