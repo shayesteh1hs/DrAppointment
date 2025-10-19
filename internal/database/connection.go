@@ -29,12 +29,6 @@ func Connect(ctx context.Context, config *Config) (*sql.DB, error) {
 		url.QueryEscape(config.Password),
 		config.Host, config.Port, config.DBName, config.SSLMode)
 	db, err := sql.Open("postgres", u)
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Printf("Failed to close database: %v", err)
-		}
-	}(db)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -52,6 +46,12 @@ func Connect(ctx context.Context, config *Config) (*sql.DB, error) {
 	}
 
 	if err := db.PingContext(ctx); err != nil {
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				log.Printf("Failed to close database after failing in Pinging db: %v", err)
+			}
+		}(db)
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
