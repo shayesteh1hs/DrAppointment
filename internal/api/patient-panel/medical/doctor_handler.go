@@ -47,6 +47,7 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 	if err != nil {
 		log.Printf("failed to fetch doctors count: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors count"})
+		return
 	}
 
 	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
