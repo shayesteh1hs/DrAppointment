@@ -33,7 +33,7 @@ func main() {
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
-			log.Printf("Failed to close database")
+			log.Printf("Failed to close database: %v", err)
 		}
 	}(db)
 
