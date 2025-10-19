@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 
@@ -136,13 +137,21 @@ func (p *CursorPaginator[T]) buildURL(id string, ordering string) string {
 		return ""
 	}
 
+	// Parse existing URL to preserve query parameters
+	u, err := url.Parse(p.params.BaseURL)
+	if err != nil {
+		log.Printf("failed to parse base URL: %v", err)
+		return ""
+	}
+
 	cursor := encodeCursor(id)
-	params := url.Values{}
+	params := u.Query()
 	params.Set("cursor", cursor)
 	params.Set("ordering", ordering)
 	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
 
-	return fmt.Sprintf("%s?%s", p.params.BaseURL, params.Encode())
+	u.RawQuery = params.Encode()
+	return u.String()
 }
 
 func encodeCursor(value interface{}) string {

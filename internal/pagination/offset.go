@@ -3,6 +3,7 @@ package pagination
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 
 	"github.com/shayesteh1hs/DrAppointment/internal/domain"
@@ -74,9 +75,17 @@ func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
 		return ""
 	}
 
-	params := url.Values{}
+	// Parse existing URL to preserve query parameters
+	u, err := url.Parse(p.params.BaseURL)
+	if err != nil {
+		log.Printf("failed to parse base URL: %v", err)
+		return ""
+	}
+
+	params := u.Query()
 	params.Set("page", fmt.Sprintf("%d", page))
 	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
 
-	return fmt.Sprintf("%s?%s", p.params.BaseURL, params.Encode())
+	u.RawQuery = params.Encode()
+	return u.String()
 }
