@@ -57,14 +57,16 @@ func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount i
 
 	if p.params.Page > 1 {
 		prevPage := p.params.Page - 1
-		prevURL := p.buildURL(prevPage)
-		result.Previous = &prevURL
+		if prevURL := p.buildURL(prevPage); prevURL != "" {
+			result.Previous = &prevURL
+		}
 	}
 
 	if p.params.Page < totalPages {
 		nextPage := p.params.Page + 1
-		nextURL := p.buildURL(nextPage)
-		result.Next = &nextURL
+		if nextURL := p.buildURL(nextPage); nextURL != "" {
+			result.Next = &nextURL
+		}
 	}
 
 	return result
