@@ -62,19 +62,8 @@ func (r *doctorRepository) Count(ctx context.Context, filters filter.DoctorQuery
 	filters.Apply(sb)
 
 	query, args := sb.Build()
-	rows, err := r.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count doctors: %w", err)
-	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			log.Printf("failed to close rows: %v", err)
-		}
-	}(rows)
-
 	var totalCount int
-	err = rows.Scan(&totalCount)
+	err := r.db.QueryRowContext(ctx, query, args...).Scan(&totalCount)
 	if err != nil {
 		return 0, fmt.Errorf("failed to scan total count: %w", err)
 	}
