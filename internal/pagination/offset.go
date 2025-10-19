@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"drgo/internal/domain"
+	"github.com/shayesteh1hs/DrAppointment/internal/domain"
 
 	"github.com/huandu/go-sqlbuilder"
 )

@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"drgo/internal/middleware"
-	medical_router "drgo/internal/router/patient-panel"
+	"github.com/shayesteh1hs/DrAppointment/internal/middleware"
+	medical_router "github.com/shayesteh1hs/DrAppointment/internal/router/patient-panel"
 )
 
 func SetupRouter(db *sql.DB) *gin.Engine {

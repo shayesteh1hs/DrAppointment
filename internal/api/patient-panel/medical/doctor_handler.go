@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"drgo/internal/domain/medical"
-	medicalFilter "drgo/internal/filter/medical"
-	"drgo/internal/pagination"
-	medicalRepo "drgo/internal/repository/medical"
+	"github.com/shayesteh1hs/DrAppointment/internal/domain/medical"
+	medicalFilter "github.com/shayesteh1hs/DrAppointment/internal/filter/medical"
+	"github.com/shayesteh1hs/DrAppointment/internal/pagination"
+	medicalRepo "github.com/shayesteh1hs/DrAppointment/internal/repository/medical"
 )
 
 type Handler struct {

@@ -11,10 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"drgo/internal/database"
-	"drgo/internal/router"
-	"drgo/internal/utils"
 	"strconv"
+
+	"github.com/shayesteh1hs/DrAppointment/internal/database"
+	"github.com/shayesteh1hs/DrAppointment/internal/router"
+	"github.com/shayesteh1hs/DrAppointment/internal/utils"
 )
 
 func main() {

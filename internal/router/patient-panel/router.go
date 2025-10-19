@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	medical_api "drgo/internal/api/patient-panel/medical"
-	"drgo/internal/repository/medical"
+	medical_api "github.com/shayesteh1hs/DrAppointment/internal/api/patient-panel/medical"
+	"github.com/shayesteh1hs/DrAppointment/internal/repository/medical"
 )
 
 func SetupPatientPanelRoutes(rg *gin.RouterGroup, db *sql.DB) {

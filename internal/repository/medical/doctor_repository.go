@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/huandu/go-sqlbuilder"
 
-	domain "drgo/internal/domain/medical"
-	filter "drgo/internal/filter/medical"
-	"drgo/internal/pagination"
+	domain "github.com/shayesteh1hs/DrAppointment/internal/domain/medical"
+	filter "github.com/shayesteh1hs/DrAppointment/internal/filter/medical"
+	"github.com/shayesteh1hs/DrAppointment/internal/pagination"
 )
 
 type DoctorRepository interface {
