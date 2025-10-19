@@ -1,6 +1,8 @@
 package filter
 
 import (
+	"errors"
+
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -12,12 +14,14 @@ type Filter interface {
 type Filters []Filter
 
 func (f Filters) Validate() error {
+	var errs error
+
 	for _, filter := range f {
 		if err := filter.Validate(); err != nil {
-			return err
+			errs = errors.Join(errs, err)
 		}
 	}
-	return nil
+	return errs
 }
 
 func (f Filters) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
