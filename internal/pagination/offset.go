@@ -16,12 +16,6 @@ type LimitOffsetParams struct {
 }
 
 func (p *LimitOffsetParams) Validate() error {
-	if p.Page < 1 {
-		return fmt.Errorf("page must be >= 1")
-	}
-	if p.Limit < 1 || p.Limit > 100 {
-		return fmt.Errorf("limit must be between 1 and 100")
-	}
 	return nil
 }
 

@@ -19,10 +19,6 @@ type CursorParams struct {
 }
 
 func (p *CursorParams) Validate() error {
-	if p.Limit < 1 || p.Limit > 100 {
-		return fmt.Errorf("limit must be between 1 and 100")
-	}
-
 	p.Ordering = strings.ToLower(p.Ordering)
 	if p.Ordering != "asc" && p.Ordering != "desc" {
 		return fmt.Errorf("ordering must be either 'asc' or 'desc'")
