@@ -2,12 +2,13 @@ package medical
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/huandu/go-sqlbuilder"
 )
 
 type DoctorQueryParam struct {
-	Name        string `form:"name"`
-	SpecialtyID int    `form:"specialty_id"`
+	Name        string    `form:"name"`
+	SpecialtyID uuid.UUID `form:"specialty_id"`
 }
 
 func (f DoctorQueryParam) Validate() error {

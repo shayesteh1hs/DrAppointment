@@ -9,7 +9,7 @@ import (
 type Doctor struct {
 	ID          uuid.UUID `json:"id" db:"id"`
 	Name        string    `json:"name" db:"name"`
-	SpecialtyID int       `json:"specialty_id" db:"specialty_id"`
+	SpecialtyID uuid.UUID `json:"specialty_id" db:"specialty_id"`
 	PhoneNumber string    `json:"phone_number" db:"phone_number"`
 	AvatarURL   string    `json:"avatar_url" db:"avatar_url"`
 	Description string    `json:"description" db:"description"`
