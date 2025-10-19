@@ -1,6 +1,6 @@
--- Create doctors table
+--
 CREATE TABLE IF NOT EXISTS doctors (
-    id UUID PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v7() PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     specialty_id int NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
@@ -11,5 +11,11 @@ CREATE TABLE IF NOT EXISTS doctors (
     CONSTRAINT fk_doctors_specialty_id FOREIGN KEY (specialty_id) REFERENCES specialties(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Create index for faster queries
+--
 CREATE INDEX IF NOT EXISTS idx_doctors_specialty_id ON doctors(specialty_id);
+
+--
+CREATE TRIGGER update_doctors_updated_at
+    BEFORE UPDATE ON doctors
+    FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();

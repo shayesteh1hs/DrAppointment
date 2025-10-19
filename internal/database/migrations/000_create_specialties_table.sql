@@ -1,6 +1,6 @@
 -- Create specialties table
 CREATE TABLE IF NOT EXISTS specialties (
-    id int PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v7() PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
