@@ -13,5 +13,4 @@ func SetupPatientPanelRoutes(rg *gin.RouterGroup, db *sql.DB) {
 	doctorRepo := medical.NewDoctorRepository(db)
 	doctorHandler := medical_api.NewHandler(doctorRepo)
 	doctorHandler.RegisterRoutes(rg)
-
 }
