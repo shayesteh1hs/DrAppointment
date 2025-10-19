@@ -35,7 +35,7 @@ func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) *Li
 	return &LimitOffsetPaginator[T]{params: params}
 }
 
-func (p *LimitOffsetPaginator[T]) Paginate(sb sqlbuilder.SelectBuilder) error {
+func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
 	if !p.params.isValidated() {
 		return errors.New("params should be validated before paginating")
 	}

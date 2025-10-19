@@ -31,7 +31,7 @@ func (r *doctorRepository) GetAllPaginated(ctx context.Context, filters filter.D
 	sb.From("doctors")
 	sb = filters.Apply(sb)
 
-	if err := paginator.Paginate(*sb); err != nil {
+	if err := paginator.Paginate(sb); err != nil {
 		return nil, err
 	}
 
