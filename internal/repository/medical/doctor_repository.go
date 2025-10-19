@@ -13,44 +13,28 @@ import (
 	domain "drgo/internal/domain/medical"
 	filter "drgo/internal/filter/medical"
 	"drgo/internal/pagination"
-	querybuilder "drgo/internal/query_builder/medical"
 )
 
 type DoctorRepository interface {
-	GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error)
+	GetAllPaginated(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) ([]domain.Doctor, error)
+	Count(ctx context.Context, filters filter.DoctorQueryParam) (int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Doctor, error)
-	Create(ctx context.Context, doctor *domain.Doctor) error
 }
 
 type doctorRepository struct {
 	db *sql.DB
 }
 
-func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) (*pagination.Result[domain.Doctor], error) {
-	// Build query for count
-	countQb := querybuilder.NewDoctorQueryBuilder()
-	countQb.WithFilters(filters)
-	countSb := countQb.CountBuilder()
-	countQuery, countArgs := countSb.Build()
+func (r *doctorRepository) GetAllPaginated(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) ([]domain.Doctor, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.From("doctors")
+	sb = filters.Apply(sb)
+	sb = paginator.Paginate(sb)
 
-	var totalCount int
-	err := r.db.QueryRowContext(ctx, countQuery, countArgs...).Scan(&totalCount)
+	query, args := sb.Build()
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to count doctors: %w", err)
-	}
-
-	// Build query with filters and pagination
-	qb := querybuilder.NewDoctorQueryBuilder().
-		WithFilters(filters).
-		WithOrderBy("doctors.id")
-
-	sb := qb.Build()
-
-	paginatedQuery, paginatedArgs := paginator.Paginate(sb)
-
-	rows, err := r.db.QueryContext(ctx, paginatedQuery, paginatedArgs...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query doctors: %w", err)
+		return nil, err
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -61,15 +45,36 @@ func (r *doctorRepository) GetAllOffset(ctx context.Context, filters filter.Doct
 
 	doctors, err := r.scanDoctors(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan doctors: %w", err)
+		return nil, err
 	}
 
-	// Create pagination result using the paginator
-	meta := paginator.GetMeta(totalCount)
-	return &pagination.Result[domain.Doctor]{
-		Items: doctors,
-		Meta:  meta,
-	}, nil
+	return doctors, nil
+}
+
+func (r *doctorRepository) Count(ctx context.Context, filters filter.DoctorQueryParam) (int, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("count(*)")
+	sb.From("doctors")
+	filters.Apply(sb)
+
+	query, args := sb.Build()
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count doctors: %w", err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
+
+	var totalCount int
+	err = rows.Scan(&totalCount)
+	if err != nil {
+		return 0, fmt.Errorf("failed to scan total count: %w", err)
+	}
+	return totalCount, nil
 }
 
 func (r *doctorRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Doctor, error) {
@@ -129,29 +134,6 @@ func (r *doctorRepository) scanDoctors(rows *sql.Rows) ([]domain.Doctor, error) 
 	return doctors, nil
 }
 
-func (r *doctorRepository) Create(ctx context.Context, doctor *domain.Doctor) error {
-	ib := sqlbuilder.PostgreSQL.NewInsertBuilder()
-	ib.InsertInto("doctors")
-	ib.Cols(
-		"id", "name", "specialty_id", "phone_number",
-		"avatar_url", "description", "created_at", "updated_at",
-	)
-	ib.Values(
-		doctor.ID,
-		doctor.Name,
-		doctor.SpecialtyID,
-		doctor.PhoneNumber,
-		doctor.AvatarURL,
-		doctor.Description,
-		doctor.CreatedAt,
-		doctor.UpdatedAt,
-	)
-
-	query, args := ib.Build()
-
-	_, err := r.db.ExecContext(ctx, query, args...)
-	return err
-}
 func NewDoctorRepository(db *sql.DB) DoctorRepository {
 	return &doctorRepository{db: db}
 }

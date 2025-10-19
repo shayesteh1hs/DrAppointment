@@ -42,9 +42,13 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 		return
 	}
 
-	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
+	totalCount, err := h.repo.Count(c.Request.Context(), filterParams)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors count"})
+	}
 
-	totalCount, doctors, err := h.repo.GetAllPaginated(c.Request.Context(), filterParams, paginator)
+	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
+	doctors, err := h.repo.GetAllPaginated(c.Request.Context(), filterParams, paginator)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors"})
 		return
