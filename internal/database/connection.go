@@ -24,11 +24,16 @@ type Config struct {
 }
 
 func Connect(ctx context.Context, config *Config) (*sql.DB, error) {
-	u := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		url.QueryEscape(config.User),
-		url.QueryEscape(config.Password),
-		config.Host, config.Port, config.DBName, config.SSLMode)
-	db, err := sql.Open("postgres", u)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(config.User, config.Password),
+		Host:   fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Path:   "/" + config.DBName,
+	}
+	q := u.Query()
+	q.Set("sslmode", config.SSLMode)
+	u.RawQuery = q.Encode()
+	db, err := sql.Open("postgres", u.String())
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
