@@ -27,6 +27,7 @@ type doctorRepository struct {
 
 func (r *doctorRepository) GetAllPaginated(ctx context.Context, filters filter.DoctorQueryParam, paginator *pagination.LimitOffsetPaginator[domain.Doctor]) ([]domain.Doctor, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("id", "name", "specialty_id", "phone_number", "avatar_url", "description", "created_at", "updated_at")
 	sb.From("doctors")
 	sb = filters.Apply(sb)
 
