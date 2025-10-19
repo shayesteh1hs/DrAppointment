@@ -7,13 +7,14 @@ import (
 )
 
 type Result[T domain.ModelEntity] struct {
-	Items []T         `json:"items"`
-	Meta  interface{} `json:"meta"`
+	Items      []T     `json:"items"`
+	TotalCount int     `json:"total_count"`
+	Previous   *string `json:"previous,omitempty"`
+	Next       *string `json:"next,omitempty"`
 }
 
 type Paginator[T domain.ModelEntity] interface {
 	Paginate(sb *sqlbuilder.SelectBuilder) (string, []interface{})
-	GetMeta(totalCount int) interface{}
 	CreatePaginationResult(items []T, totalCount int) *Result[T]
 }
 

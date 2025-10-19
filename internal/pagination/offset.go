@@ -2,6 +2,7 @@ package pagination
 
 import (
 	"fmt"
+	"net/url"
 
 	"drgo/internal/domain"
 
@@ -9,8 +10,9 @@ import (
 )
 
 type LimitOffsetParams struct {
-	Page  int `form:"page,default=1" binding:"min=1"`
-	Limit int `form:"limit,default=10" binding:"min=1,max=100"`
+	Page    int    `form:"page,default=1" binding:"min=1"`
+	Limit   int    `form:"limit,default=10" binding:"min=1,max=100"`
+	BaseURL string `form:"-"`
 }
 
 func (p *LimitOffsetParams) Validate() error {
@@ -21,13 +23,6 @@ func (p *LimitOffsetParams) Validate() error {
 		return fmt.Errorf("limit must be between 1 and 100")
 	}
 	return nil
-}
-
-type LimitOffsetMeta struct {
-	Page       int `json:"page"`
-	Limit      int `json:"limit"`
-	TotalCount int `json:"total_count"`
-	TotalPages int `json:"total_pages"`
 }
 
 type LimitOffsetPaginator[T domain.ModelEntity] struct {
@@ -44,25 +39,40 @@ func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) (string
 	sb.Offset(offset)
 
 	query, args := sb.Build()
-
 	return query, args
 }
 
-func (p *LimitOffsetPaginator[T]) GetMeta(totalCount int) LimitOffsetMeta {
-	totalPages := (totalCount + p.params.Limit - 1) / p.params.Limit
-	return LimitOffsetMeta{
-		Page:       p.params.Page,
-		Limit:      p.params.Limit,
+func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
+	result := &Result[T]{
+		Items:      items,
 		TotalCount: totalCount,
-		TotalPages: totalPages,
 	}
+
+	totalPages := (totalCount + p.params.Limit - 1) / p.params.Limit
+
+	if p.params.Page > 1 {
+		prevPage := p.params.Page - 1
+		prevURL := p.buildURL(prevPage)
+		result.Previous = &prevURL
+	}
+
+	if p.params.Page < totalPages {
+		nextPage := p.params.Page + 1
+		nextURL := p.buildURL(nextPage)
+		result.Next = &nextURL
+	}
+
+	return result
 }
 
-func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
-	meta := p.GetMeta(totalCount)
-
-	return &Result[T]{
-		Items: items,
-		Meta:  meta,
+func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
+	if p.params.BaseURL == "" {
+		return ""
 	}
+
+	params := url.Values{}
+	params.Set("page", fmt.Sprintf("%d", page))
+	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
+
+	return fmt.Sprintf("%s?%s", p.params.BaseURL, params.Encode())
 }
