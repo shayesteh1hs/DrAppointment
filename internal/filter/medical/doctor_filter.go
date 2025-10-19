@@ -16,7 +16,7 @@ func (f DoctorQueryParam) Validate() error {
 }
 func (f DoctorQueryParam) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 	if f.Name != "" {
-		sb.Where(sb.Equal("name", f.Name))
+		sb.Where(sb.Like("name", "%"+f.Name+"%"))
 	}
 	if f.SpecialtyID != 0 {
 		sb.Where(sb.Equal("specialty_id", f.SpecialtyID))

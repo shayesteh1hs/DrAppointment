@@ -16,7 +16,7 @@ func (f SpecialtyFilter) Validate() error {
 
 func (f SpecialtyFilter) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 	if f.Name != "" {
-		sb.Where(sb.Equal("name", f.Name))
+		sb.Where(sb.Like("name", "%"+f.Name+"%"))
 	}
 	return sb
 }
