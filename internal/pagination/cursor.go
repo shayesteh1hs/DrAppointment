@@ -53,7 +53,7 @@ func NewCursorPaginator[T domain.ModelEntity](params CursorParams) *CursorPagina
 	return &CursorPaginator[T]{params: params}
 }
 
-func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) (string, []interface{}) {
+func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 	// Fetch one extra item to determine if there's a next/previous page
 	sb.Limit(p.params.Limit + 1)
 
@@ -76,8 +76,7 @@ func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) (string, []i
 		sb.OrderByDesc("id")
 	}
 
-	query, args := sb.Build()
-	return query, args
+	return sb
 }
 
 func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {

@@ -14,7 +14,7 @@ type Result[T domain.ModelEntity] struct {
 }
 
 type Paginator[T domain.ModelEntity] interface {
-	Paginate(sb *sqlbuilder.SelectBuilder) (string, []interface{})
+	Paginate(sb sqlbuilder.SelectBuilder) sqlbuilder.SelectBuilder
 	CreatePaginationResult(items []T, totalCount int) *Result[T]
 }
 

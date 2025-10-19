@@ -21,7 +21,7 @@ func NewHandler(repo medicalRepo.DoctorRepository) *Handler {
 	}
 }
 
-func (h *Handler) GetAll(c *gin.Context) {
+func (h *Handler) GetAllPaginated(c *gin.Context) {
 	var paginationParams pagination.LimitOffsetParams
 	if err := c.ShouldBindQuery(&paginationParams); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pagination parameters"})
@@ -43,18 +43,19 @@ func (h *Handler) GetAll(c *gin.Context) {
 	}
 
 	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
-	result, err := h.repo.GetAllOffset(c.Request.Context(), filterParams, paginator)
+
+	totalCount, doctors, err := h.repo.GetAllPaginated(c.Request.Context(), filterParams, paginator)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors"})
 		return
 	}
 
+	result := paginator.CreatePaginationResult(doctors, totalCount)
 	c.JSON(http.StatusOK, result)
 }
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	doctorRoutes := router.Group("/doctors")
-	{
-		doctorRoutes.GET("", h.GetAll)
-	}
+
+	doctorRoutes.GET("", h.GetAllPaginated)
 }
