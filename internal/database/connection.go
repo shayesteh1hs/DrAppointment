@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -22,10 +23,11 @@ type Config struct {
 }
 
 func Connect(ctx context.Context, config *Config) (*sql.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode)
-
-	db, err := sql.Open("postgres", dsn)
+	u := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		url.QueryEscape(config.User),
+		url.QueryEscape(config.Password),
+		config.Host, config.Port, config.DBName, config.SSLMode)
+	db, err := sql.Open("postgres", u)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
