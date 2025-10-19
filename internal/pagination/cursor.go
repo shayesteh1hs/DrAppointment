@@ -140,11 +140,11 @@ func (p *CursorPaginator[T]) buildURL(id string, ordering string) string {
 
 func encodeCursor(value interface{}) string {
 	str := fmt.Sprintf("%v", value)
-	return base64.URLEncoding.EncodeToString([]byte(str))
+	return base64.RawURLEncoding.EncodeToString([]byte(str))
 }
 
 func decodeCursor(cursor string) (string, error) {
-	decoded, err := base64.URLEncoding.DecodeString(cursor)
+	decoded, err := base64.RawURLEncoding.DecodeString(cursor)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode cursor: %w", err)
 	}
