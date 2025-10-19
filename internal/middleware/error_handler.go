@@ -23,12 +23,9 @@ func ErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		// Only handle errors if the response has not been written yet
-		if c.Writer.Status() == http.StatusOK {
-			if len(c.Errors) > 0 {
-				err := c.Errors.Last().Err
-				handleError(c, err)
-			}
+		if len(c.Errors) > 0 && !c.Writer.Written() {
+			err := c.Errors.Last().Err
+			handleError(c, err)
 		}
 	}
 }
