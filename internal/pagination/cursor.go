@@ -57,7 +57,7 @@ func NewCursorPaginator[T domain.ModelEntity](params CursorParams) *CursorPagina
 	return &CursorPaginator[T]{params: params}
 }
 
-func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
+func (p *CursorPaginator[T]) Paginate(sb sqlbuilder.SelectBuilder) error {
 	if !p.params.isValidated() {
 		return errors.New("params should be validated before paginating")
 	}
