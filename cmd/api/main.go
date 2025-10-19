@@ -1,0 +1,72 @@
+package main
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"strconv"
+
+	"github.com/shayesteh1hs/DrAppointment/internal/database"
+	"github.com/shayesteh1hs/DrAppointment/internal/router"
+	"github.com/shayesteh1hs/DrAppointment/internal/utils"
+)
+
+func main() {
+	dbConfig := database.Config{
+		Host:     utils.GetEnv("DB_HOST", "localhost"),
+		Port:     utils.GetEnvInt("DB_PORT", 5432),
+		User:     utils.GetEnv("DB_USER", "postgres"),
+		Password: utils.GetEnv("DB_PASSWORD", "postgres"),
+		DBName:   utils.GetEnv("DB_NAME", "drgo"),
+		SSLMode:  utils.GetEnv("DB_SSL_MODE", "disable"),
+	}
+
+	databaseCtx, databaseCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer databaseCancel()
+	db, err := database.Connect(databaseCtx, &dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Printf("Failed to close database: %v", err)
+		}
+	}(db)
+
+	r := router.SetupRouter(db)
+
+	port := utils.GetEnvInt("PORT", 8000)
+	server := &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	log.Println("Server started on port", port)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+
+	log.Println("Server exiting")
+}
