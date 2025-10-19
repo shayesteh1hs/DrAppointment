@@ -1,6 +1,6 @@
 --
 CREATE TABLE IF NOT EXISTS doctors (
-    id UUID DEFAULT uuid_generate_v7() PRIMARY KEY,
+    id UUID DEFAULT uuidv7() PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     specialty_id UUID NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
