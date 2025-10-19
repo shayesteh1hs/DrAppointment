@@ -14,6 +14,7 @@ import (
 	"drgo/internal/database"
 	"drgo/internal/router"
 	"drgo/internal/utils"
+	"strconv"
 )
 
 func main() {
@@ -39,8 +40,9 @@ func main() {
 
 	r := router.SetupRouter(db)
 
+	port := utils.GetEnvInt("PORT", 8000)
 	server := &http.Server{
-		Addr:    ":" + utils.GetEnv("PORT", "8080"),
+		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,
 	}
 
@@ -50,7 +52,7 @@ func main() {
 		}
 	}()
 
-	log.Println("Server started on port", utils.GetEnvInt("PORT", 8000))
+	log.Println("Server started on port", port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
