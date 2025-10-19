@@ -6,7 +6,7 @@ import (
 )
 
 type SearchDoctorsRequest struct {
-	SpecialtyID uuid.UUID `form:"specialty_id" validate:"omitempty,min=1"`
+	SpecialtyID uuid.UUID `form:"specialty_id" validate:"omitempty"`
 	Name        string    `form:"name" validate:"omitempty,max=100"`
 }
 
