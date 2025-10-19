@@ -1,6 +1,6 @@
 module github.com/shayesteh1hs/DrAppointment
 
-go 1.25.3
+go 1.25
 
 require (
 	github.com/gin-gonic/gin v1.11.0
