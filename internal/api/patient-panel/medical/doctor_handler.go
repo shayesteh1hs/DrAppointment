@@ -1,6 +1,7 @@
 package medical
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,12 +45,14 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 
 	totalCount, err := h.repo.Count(c.Request.Context(), filterParams)
 	if err != nil {
+		log.Printf("failed to fetch doctors count: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors count"})
 	}
 
 	paginator := pagination.NewLimitOffsetPaginator[medical.Doctor](paginationParams)
 	doctors, err := h.repo.GetAllPaginated(c.Request.Context(), filterParams, paginator)
 	if err != nil {
+		log.Printf("failed to fetch doctors: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctors"})
 		return
 	}
