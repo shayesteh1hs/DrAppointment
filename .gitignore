@@ -10,6 +10,15 @@
 
 # Output of the go coverage tool
 *.out
+coverage.out
+*.coverprofile
+*.pprof
+
+# Temp/build artifacts
+bin/
+build/
+dist/
+tmp/
 
 # Dependency directories
 vendor/
