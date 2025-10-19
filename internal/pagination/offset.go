@@ -33,7 +33,7 @@ func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) *Li
 	return &LimitOffsetPaginator[T]{params: params}
 }
 
-func (p *LimitOffsetPaginator[T]) Paginate(sb sqlbuilder.SelectBuilder) sqlbuilder.SelectBuilder {
+func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 	offset := (p.params.Page - 1) * p.params.Limit
 	sb.Limit(p.params.Limit)
 	sb.Offset(offset)
