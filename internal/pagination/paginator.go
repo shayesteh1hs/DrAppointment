@@ -15,7 +15,7 @@ type Result[T domain.ModelEntity] struct {
 
 type Paginator[T domain.ModelEntity] interface {
 	Paginate(sb *sqlbuilder.SelectBuilder) error
-	CreatePaginationResult(items []T, totalCount int) *Result[T]
+	CreatePaginationResult(items []T, totalCount int) (*Result[T], error)
 	IsValidated() bool // to check if the params are validated before paginating
 }
 

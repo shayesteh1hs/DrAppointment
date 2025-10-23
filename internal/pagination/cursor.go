@@ -87,7 +87,11 @@ func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
 	return nil
 }
 
-func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
+func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) (*Result[T], error) {
+	if !p.params.IsValidated() {
+		return nil, errors.New("params should be validated before paginating")
+	}
+
 	result := &Result[T]{
 		Items:      items,
 		TotalCount: totalCount,
@@ -106,7 +110,7 @@ func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *
 	}
 
 	if len(result.Items) == 0 {
-		return result
+		return result, nil
 	}
 
 	firstItem := result.Items[0]
@@ -129,7 +133,7 @@ func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 func (p *CursorPaginator[T]) buildURL(id string, ordering string) string {

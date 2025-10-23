@@ -19,6 +19,10 @@ type LimitOffsetParams struct {
 }
 
 func (p *LimitOffsetParams) Validate() error {
+	if p.BaseURL == "" {
+		return errors.New("base url is required")
+	}
+
 	p.validated = true
 	return nil
 }
@@ -50,7 +54,10 @@ func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
 	return nil
 }
 
-func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
+func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) (*Result[T], error) {
+	if !p.params.IsValidated() {
+		return nil, errors.New("params should be validated before paginating")
+	}
 	result := &Result[T]{
 		Items:      items,
 		TotalCount: totalCount,
@@ -72,7 +79,7 @@ func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount i
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
