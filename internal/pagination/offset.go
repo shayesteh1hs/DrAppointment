@@ -67,31 +67,35 @@ func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount i
 
 	if p.params.Page > 1 {
 		prevPage := p.params.Page - 1
-		if prevURL := p.buildURL(prevPage); prevURL != "" {
-			result.Previous = &prevURL
+		prevURL, err := p.buildURL(prevPage)
+		if err != nil {
+			return nil, err
 		}
+		result.Previous = &prevURL
 	}
 
 	if p.params.Page < totalPages {
 		nextPage := p.params.Page + 1
-		if nextURL := p.buildURL(nextPage); nextURL != "" {
-			result.Next = &nextURL
+		nextURL, err := p.buildURL(nextPage)
+		if err != nil {
+			return nil, err
 		}
+		result.Next = &nextURL
 	}
 
 	return result, nil
 }
 
-func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
+func (p *LimitOffsetPaginator[T]) buildURL(page int) (string, error) {
 	if p.params.BaseURL == "" {
-		return ""
+		return "", errors.New("base url is required")
 	}
 
 	// Parse existing URL to preserve query parameters
 	u, err := url.Parse(p.params.BaseURL)
 	if err != nil {
 		log.Printf("failed to parse base URL: %v", err)
-		return ""
+		return "", errors.New("failed to parse base url")
 	}
 
 	params := u.Query()
@@ -99,5 +103,5 @@ func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
 	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
 
 	u.RawQuery = params.Encode()
-	return u.String()
+	return u.String(), nil
 }
