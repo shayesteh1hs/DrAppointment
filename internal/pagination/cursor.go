@@ -10,7 +10,6 @@ import (
 
 	"github.com/shayesteh1hs/DrAppointment/internal/domain"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -23,11 +22,6 @@ type CursorParams struct {
 }
 
 func (p *CursorParams) Validate() error {
-	validate := validator.New()
-	if err := validate.Struct(p); err != nil {
-		return err
-	}
-
 	p.Ordering = strings.ToLower(p.Ordering)
 	if p.Ordering != "asc" && p.Ordering != "desc" {
 		return fmt.Errorf("ordering must be either 'asc' or 'desc'")
@@ -51,7 +45,7 @@ func (p *CursorParams) IsBackward() bool {
 	return p.Ordering == "desc"
 }
 
-func (p *CursorParams) isValidated() bool {
+func (p *CursorParams) IsValidated() bool {
 	return p.validated
 }
 
@@ -64,7 +58,7 @@ func NewCursorPaginator[T domain.ModelEntity](params CursorParams) *CursorPagina
 }
 
 func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
-	if !p.params.isValidated() {
+	if !p.params.IsValidated() {
 		return errors.New("params should be validated before paginating")
 	}
 

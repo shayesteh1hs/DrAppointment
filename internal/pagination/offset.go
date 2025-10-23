@@ -8,7 +8,6 @@ import (
 
 	"github.com/shayesteh1hs/DrAppointment/internal/domain"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -20,16 +19,11 @@ type LimitOffsetParams struct {
 }
 
 func (p *LimitOffsetParams) Validate() error {
-	validate := validator.New()
-	if err := validate.Struct(p); err != nil {
-		return err
-	}
-
 	p.validated = true
 	return nil
 }
 
-func (p *LimitOffsetParams) isValidated() bool {
+func (p *LimitOffsetParams) IsValidated() bool {
 	return p.validated
 }
 
@@ -46,7 +40,7 @@ func (p *LimitOffsetPaginator[T]) getOffset() int {
 }
 
 func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
-	if !p.params.isValidated() {
+	if !p.params.IsValidated() {
 		return errors.New("params should be validated before paginating")
 	}
 
