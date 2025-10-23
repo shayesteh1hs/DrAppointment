@@ -8,17 +8,23 @@ import (
 
 	"github.com/shayesteh1hs/DrAppointment/internal/domain"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/huandu/go-sqlbuilder"
 )
 
 type LimitOffsetParams struct {
 	Page      int    `form:"page,default=1" binding:"min=1"`
 	Limit     int    `form:"limit,default=10" binding:"min=1,max=100"`
-	BaseURL   string `form:"-"`
+	BaseURL   string `form:"-,omitempty"`
 	validated bool
 }
 
 func (p *LimitOffsetParams) Validate() error {
+	validate := validator.New()
+	if err := validate.Struct(p); err != nil {
+		return err
+	}
+
 	p.validated = true
 	return nil
 }

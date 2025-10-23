@@ -10,6 +10,7 @@ import (
 
 	"github.com/shayesteh1hs/DrAppointment/internal/domain"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -22,6 +23,11 @@ type CursorParams struct {
 }
 
 func (p *CursorParams) Validate() error {
+	validate := validator.New()
+	if err := validate.Struct(p); err != nil {
+		return err
+	}
+
 	p.Ordering = strings.ToLower(p.Ordering)
 	if p.Ordering != "asc" && p.Ordering != "desc" {
 		return fmt.Errorf("ordering must be either 'asc' or 'desc'")
