@@ -1,7 +1,8 @@
 package medical
 
 import (
-	"github.com/go-playground/validator/v10"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/huandu/go-sqlbuilder"
 )
@@ -12,12 +13,12 @@ type DoctorQueryParam struct {
 }
 
 func (f DoctorQueryParam) Validate() error {
-	validate := validator.New()
-	return validate.Struct(f)
+	return nil
 }
 func (f DoctorQueryParam) Apply(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
-	if f.Name != "" {
-		sb.Where(sb.Like("name", "%"+f.Name+"%"))
+	trimmedName := strings.TrimSpace(f.Name)
+	if trimmedName != "" {
+		sb.Where(sb.Like("name", "%"+trimmedName+"%"))
 	}
 	if f.SpecialtyID != uuid.Nil {
 		sb.Where(sb.Equal("specialty_id", f.SpecialtyID.String()))
