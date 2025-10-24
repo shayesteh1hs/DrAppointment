@@ -386,28 +386,3 @@ func TestDoctorRepository_GetByID(t *testing.T) {
 		})
 	}
 }
-
-// Benchmarks
-
-func BenchmarkDoctorRepository_GetAllPaginated(b *testing.B) {
-	db, mock := setupTestDB(&testing.T{})
-	defer db.Close()
-
-	repo := NewDoctorRepository(db)
-	ctx := context.Background()
-	doctor := newTestDoctor("Dr. Test")
-
-	paginator := &pagination.LimitOffsetPaginator[medical.Doctor]{}
-	params := pagination.LimitOffsetParams{Page: 1, Limit: 10, BaseURL: "http://test"}
-	params.Validate()
-	paginator = pagination.NewLimitOffsetPaginator[medical.Doctor](params)
-
-	for i := 0; i < b.N; i++ {
-		mock.ExpectQuery(`SELECT`).WillReturnRows(mockDoctorRows(doctor))
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		repo.GetAllPaginated(ctx, filter.DoctorQueryParam{}, paginator)
-	}
-}
