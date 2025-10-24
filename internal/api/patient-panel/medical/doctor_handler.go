@@ -28,6 +28,7 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pagination parameters"})
 		return
 	}
+	paginationParams.BaseURL = c.Request.RequestURI
 	if err := paginationParams.Validate(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
