@@ -28,6 +28,7 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pagination parameters"})
 		return
 	}
+	paginationParams.BaseURL = c.Request.RequestURI
 	if err := paginationParams.Validate(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -58,7 +59,13 @@ func (h *Handler) GetAllPaginated(c *gin.Context) {
 		return
 	}
 
-	result := paginator.CreatePaginationResult(doctors, totalCount)
+	result, err := paginator.CreatePaginationResult(doctors, totalCount)
+	if err != nil {
+		log.Printf("failed to paginate doctors: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch doctor list."})
+		return
+	}
+
 	c.JSON(http.StatusOK, result)
 }
 

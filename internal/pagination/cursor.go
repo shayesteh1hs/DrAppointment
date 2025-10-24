@@ -45,7 +45,7 @@ func (p *CursorParams) IsBackward() bool {
 	return p.Ordering == "desc"
 }
 
-func (p *CursorParams) isValidated() bool {
+func (p *CursorParams) IsValidated() bool {
 	return p.validated
 }
 
@@ -58,7 +58,7 @@ func NewCursorPaginator[T domain.ModelEntity](params CursorParams) *CursorPagina
 }
 
 func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
-	if !p.params.isValidated() {
+	if !p.params.IsValidated() {
 		return errors.New("params should be validated before paginating")
 	}
 
@@ -87,7 +87,11 @@ func (p *CursorPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
 	return nil
 }
 
-func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
+func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) (*Result[T], error) {
+	if !p.params.IsValidated() {
+		return nil, errors.New("params should be validated before paginating")
+	}
+
 	result := &Result[T]{
 		Items:      items,
 		TotalCount: totalCount,
@@ -106,7 +110,7 @@ func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *
 	}
 
 	if len(result.Items) == 0 {
-		return result
+		return result, nil
 	}
 
 	firstItem := result.Items[0]
@@ -117,31 +121,35 @@ func (p *CursorPaginator[T]) CreatePaginationResult(items []T, totalCount int) *
 
 	// Generate previous link (backward pagination from first item)
 	if p.params.Cursor != "" || p.params.IsBackward() {
-		if prevURL := p.buildURL(firstID, "desc"); prevURL != "" {
-			result.Previous = &prevURL
+		prevURL, err := p.buildURL(firstID, "desc")
+		if err != nil {
+			return nil, err
 		}
+		result.Previous = &prevURL
 	}
 
 	// Generate next link (forward pagination from last item)
 	if hasMore || p.params.IsBackward() {
-		if nextURL := p.buildURL(lastID, "asc"); nextURL != "" {
-			result.Next = &nextURL
+		nextURL, err := p.buildURL(lastID, "asc")
+		if err != nil {
+			return nil, err
 		}
+		result.Next = &nextURL
 	}
 
-	return result
+	return result, nil
 }
 
-func (p *CursorPaginator[T]) buildURL(id string, ordering string) string {
+func (p *CursorPaginator[T]) buildURL(id string, ordering string) (string, error) {
 	if p.params.BaseURL == "" {
-		return ""
+		return "", errors.New("base url is required")
 	}
 
 	// Parse existing URL to preserve query parameters
 	u, err := url.Parse(p.params.BaseURL)
 	if err != nil {
 		log.Printf("failed to parse base URL: %v", err)
-		return ""
+		return "", errors.New("failed to parse base URL")
 	}
 
 	cursor := encodeCursor(id)
@@ -151,7 +159,7 @@ func (p *CursorPaginator[T]) buildURL(id string, ordering string) string {
 	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
 
 	u.RawQuery = params.Encode()
-	return u.String()
+	return u.String(), nil
 }
 
 func encodeCursor(value interface{}) string {

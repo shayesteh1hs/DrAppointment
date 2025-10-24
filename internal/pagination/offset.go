@@ -19,11 +19,15 @@ type LimitOffsetParams struct {
 }
 
 func (p *LimitOffsetParams) Validate() error {
+	if p.BaseURL == "" {
+		return errors.New("base url is required")
+	}
+
 	p.validated = true
 	return nil
 }
 
-func (p *LimitOffsetParams) isValidated() bool {
+func (p *LimitOffsetParams) IsValidated() bool {
 	return p.validated
 }
 
@@ -35,19 +39,25 @@ func NewLimitOffsetPaginator[T domain.ModelEntity](params LimitOffsetParams) *Li
 	return &LimitOffsetPaginator[T]{params: params}
 }
 
+func (p *LimitOffsetPaginator[T]) getOffset() int {
+	return p.params.Limit * (p.params.Page - 1)
+}
+
 func (p *LimitOffsetPaginator[T]) Paginate(sb *sqlbuilder.SelectBuilder) error {
-	if !p.params.isValidated() {
+	if !p.params.IsValidated() {
 		return errors.New("params should be validated before paginating")
 	}
 
-	offset := (p.params.Page - 1) * p.params.Limit
 	sb.Limit(p.params.Limit)
-	sb.Offset(offset)
+	sb.Offset(p.getOffset())
 
 	return nil
 }
 
-func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) *Result[T] {
+func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount int) (*Result[T], error) {
+	if !p.params.IsValidated() {
+		return nil, errors.New("params should be validated before paginating")
+	}
 	result := &Result[T]{
 		Items:      items,
 		TotalCount: totalCount,
@@ -57,31 +67,35 @@ func (p *LimitOffsetPaginator[T]) CreatePaginationResult(items []T, totalCount i
 
 	if p.params.Page > 1 {
 		prevPage := p.params.Page - 1
-		if prevURL := p.buildURL(prevPage); prevURL != "" {
-			result.Previous = &prevURL
+		prevURL, err := p.buildURL(prevPage)
+		if err != nil {
+			return nil, err
 		}
+		result.Previous = &prevURL
 	}
 
 	if p.params.Page < totalPages {
 		nextPage := p.params.Page + 1
-		if nextURL := p.buildURL(nextPage); nextURL != "" {
-			result.Next = &nextURL
+		nextURL, err := p.buildURL(nextPage)
+		if err != nil {
+			return nil, err
 		}
+		result.Next = &nextURL
 	}
 
-	return result
+	return result, nil
 }
 
-func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
+func (p *LimitOffsetPaginator[T]) buildURL(page int) (string, error) {
 	if p.params.BaseURL == "" {
-		return ""
+		return "", errors.New("base url is required")
 	}
 
 	// Parse existing URL to preserve query parameters
 	u, err := url.Parse(p.params.BaseURL)
 	if err != nil {
 		log.Printf("failed to parse base URL: %v", err)
-		return ""
+		return "", errors.New("failed to parse base url")
 	}
 
 	params := u.Query()
@@ -89,5 +103,5 @@ func (p *LimitOffsetPaginator[T]) buildURL(page int) string {
 	params.Set("limit", fmt.Sprintf("%d", p.params.Limit))
 
 	u.RawQuery = params.Encode()
-	return u.String()
+	return u.String(), nil
 }
